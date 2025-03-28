@@ -9,6 +9,6 @@ homepage = "https://github.com/gjf2a/bare_metal_deque"
 repository = "https://github.com/gjf2a/bare_metal_deque"
 license = "MIT OR Apache-2.0"
 keywords = ["deque", "no-std"]
-categories = ["no-std", "data structures"]
+categories = ["no-std", "data-structures", "embedded"]
 
 [dependencies]
