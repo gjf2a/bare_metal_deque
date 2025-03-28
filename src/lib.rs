@@ -1,10 +1,12 @@
 //! The `BareMetalDeque` represents a fixed-size double-ended queue analogous to [VecDeque](https://doc.rust-lang.org/std/collections/struct.VecDeque.html). It is implemented internally as a ring buffer.
 //! 
-//! Basic deque operations (push/pop front/back)
+//! If you try to add to a full deque, it will panic.
+//! 
+//! Basic deque operations (push/pop front/back):
 //! ```
 //! use bare_metal_deque::BareMetalDeque;
 //! 
-//! let mut q = BareMetalDeque::<i64, 5>::new();
+//! let mut q = BareMetalDeque::<i64, 3>::new();
 //! q.push_back(1);
 //! assert_eq!(q.back().unwrap(), 1);
 //! assert_eq!(q.front().unwrap(), 1);
@@ -16,27 +18,54 @@
 //! q.push_back(3);
 //! assert_eq!(q.back().unwrap(), 3);
 //! assert_eq!(q.front().unwrap(), 1);
+//! assert!(q.is_full());
 //! 
 //! assert_eq!(q.pop_front().unwrap(), 1);
 //! assert_eq!(q.back().unwrap(), 3);
 //! assert_eq!(q.front().unwrap(), 2);
+//! assert!(!q.is_full());
 //! 
 //! q.push_front(4);
 //! assert_eq!(q.back().unwrap(), 3);
 //! assert_eq!(q.front().unwrap(), 4);
+//! assert!(q.is_full());
 //! 
 //! assert_eq!(q.pop_back().unwrap(), 3);
 //! assert_eq!(q.back().unwrap(), 2);
 //! assert_eq!(q.front().unwrap(), 4);
+//! assert!(!q.is_full());
 //! 
 //! q.push_back(5);
 //! assert_eq!(q.back().unwrap(), 5);
 //! assert_eq!(q.front().unwrap(), 4);
+//! assert!(q.is_full());
 //! 
 //! // Indexing
 //! assert_eq!(q[0], 4);
 //! assert_eq!(q[1], 2);
 //! assert_eq!(q[2], 5);
+//! 
+//! // Mutable indexing
+//! q[0] = 6;
+//! assert_eq!(q.pop_front().unwrap(), 6);
+//! assert_eq!(q.back().unwrap(), 5);
+//! assert_eq!(q.front().unwrap(), 2);
+//! assert!(!q.is_full());
+//! ```
+//! 
+//! Iteration example:
+//! ```
+//! use bare_metal_deque::BareMetalDeque;
+//! 
+//! let mut q = BareMetalDeque::<usize, 5>::new();
+//! for n in 1..=3 {
+//!     q.push_back(n);
+//! }
+//! 
+//! for (i, v) in q.iter().enumerate() {
+//!     assert_eq!(i + 1, *v);
+//!     assert_eq!(q[i], *v);
+//! }
 //! ```
 
 #![cfg_attr(not(test), no_std)]
@@ -83,13 +112,17 @@ impl <T: Copy + Clone + Default, const MAX_STORED: usize> BareMetalDeque<T, MAX_
         self.len() == 0
     }
 
+    pub fn is_full(&self) -> bool {
+        self.len() == MAX_STORED
+    }
+
     pub fn iter(&self) -> impl Iterator<Item=&T> {
         (0..self.len()).map(|i| &self[i])
     }
 
     pub fn push_front(&mut self, value: T) {
         if self.size == self.array.len() {
-            panic!("Queue is full");
+            panic!("Deque is full");
         }
         self.start = (if self.start == 0 {self.array.len()} else {self.start}) - 1;
         self.array[self.start] = value;
@@ -98,7 +131,7 @@ impl <T: Copy + Clone + Default, const MAX_STORED: usize> BareMetalDeque<T, MAX_
 
     pub fn push_back(&mut self, value: T) {
         if self.size == self.array.len() {
-            panic!("Queue is full");
+            panic!("Deque is full");
         }
         let index = (self.start + self.size) % self.array.len();
         self.array[index] = value;
