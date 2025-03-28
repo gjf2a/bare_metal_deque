@@ -2,5 +2,13 @@
 name = "bare_metal_deque"
 version = "0.1.0"
 edition = "2024"
+authors = ["gjf2a <ferrer@hendrix.edu>"]
+description = "BareMetalDeque is a deque implementation intended for no_std use"
+readme = "README.md"
+homepage = "https://github.com/gjf2a/bare_metal_deque"
+repository = "https://github.com/gjf2a/bare_metal_deque"
+license = "MIT OR Apache-2.0"
+keywords = ["deque", "no-std"]
+categories = ["no-std", "data structures"]
 
 [dependencies]
